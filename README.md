@@ -97,12 +97,16 @@ Website SSL Config/Vulnerability Scanners
 
 ### ssl_certificate
 
-Single CRT files from certificate authorities cannot be used. In this configuration we need a PEM format x509 certificate file. This includes the signed CRT and all intermediary CA certificates but not the External Root CA certificate. Adding this will result in an error.
+Single CRT files from certificate authorities cannot be used. In this configuration we need a PEM format x509 certificate file. This includes the signed CRT and all intermediary CA certificates _but not the External Root CA certificate_. Adding the root ca cert will result in an error.
 
-Creation Example:
+Creation example if you have the SSL chain file already:
 ~~~
 cat www.example.com.crt COMODORSADomainValidationSecureServerCA.crt COMODORSAAddTrustCA.crt > /etc/ssl/ssl-bundle.pem
 ~~~
+
+#### Intermediary Chain Creation Help
+
+[https://whatsmychaincert.com/] -> Generate the Correct Chain -> paste in your signed CRT (public key) -> ensure _Include Root Certificate_ box is *not* checked -> click Generate Chain. This is supposed to create a PEM chain file with all intermediary CA certs. With this to create the ssl_certificate you can just `cat www.example.com.crt example.com.chain.crt > /etc/ssl/ssl-bundle.pem`
 
 ### ssl_certificate_key
 
@@ -124,16 +128,20 @@ openssl dsaparam -out /etc/ssl/dsaparam.pem 4096 # A 4096 bit key will be consid
 
 ### ssl_trusted_certificate
 
-The trusted certificate file is used internally by Nginx for use with OCSP. The PEM format file is the signed CRT, combined with all intermediary CA certs, combined with the final external CA root cert. We use the previously created ssl-bundle.pem file and combine it with the CA provided CA root authority cert. If they don't provide it google is your friend.
+The trusted certificate file is used internally by Nginx and it required for OCSP. The PEM format file is the signed CRT, combined with all intermediary CA certs, combined with the final external CA root cert. We use the previously created ssl-bundle.pem file and combine it with the CA provided CA root authority cert. If they don't provide it google is your friend. 
 
-Creation Example:
+Creation Example if you have the full chain already:
 ~~~
 cat /etc/ssl/ssl-bundle.pem /etc/ssl/www.example.com.externalcaroot > /etc/ssl/ca.trust
 ~~~
 
+#### Full Chain Creation Help
+
+[https://whatsmychaincert.com/] -> Generate the Correct Chain -> paste in your signed CRT (public key) -> check *Include Root Certificate* box -> click Generate Chain. This creates a PEM chain file with root cert for use with OCSP. After you download the generated CRT file you can just `cat www.example.com.crt example.com.chain+root.crt > /etc/ssl/ca.trust`
+
 ### OSCP Testing
 
-OCSP compliance can be split into 2 parts. Nginx configuration settings and a properly created ssl_trusted_certificate PEM file. If you have properly configured Nginx config but have a misconfigured ssl_trusted_certificate PEM file, you will have positive `opensssl s_client` test results and fail complete online *OCSP* validation scans.
+OCSP compliance can be split into 2 parts. Nginx configuration settings and a properly created ssl_trusted_certificate PEM file. If you have properly configured Nginx config but have a misconfigured ssl_trusted_certificate PEM file, you will have positive `opensssl s_client` test results and fail complete online *OCSP* validation scans. For help tracking down intermediary and root certs use: `openssl x509 -in /etc/ssl/file.crt -text -noout`
 
 Nginx Configuration Settings
 ~~~
