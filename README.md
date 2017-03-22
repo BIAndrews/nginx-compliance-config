@@ -130,3 +130,58 @@ Creation Example:
 ~~~
 cat /etc/ssl/ssl-bundle.pem /etc/ssl/www.example.com.externalcaroot > /etc/ssl/ca.trust
 ~~~
+
+### OSCP Testing
+
+OCSP compliance can be split into 2 parts. Nginx configuration settings and a properly created ssl_trusted_certificate PEM file. If you have properly configured Nginx config but have a misconfigured ssl_trusted_certificate PEM file, you will have positive `opensssl s_client` test results and fail complete online *OCSP* validation scans.
+
+Nginx Configuration Settings
+~~~
+    ssl_stapling on;
+    ssl_stapling_verify on;
+    # Google public DNS servers used in example
+    resolver 8.8.8.8 8.8.4.4 valid=300s;
+    resolver_timeout 2s;
+    ssl_trusted_certificate "/etc/ssl/ca.trust";
+~~~
+
+openssl Test command: `openssl s_client -connect 127.0.0.1:443 -tls1_2 -tlsextdebug -status`
+
+openssl Positive Test Result Example
+~~~
+OCSP response: 
+======================================
+OCSP Response Data:
+    OCSP Response Status: successful (0x0)
+    Response Type: Basic OCSP Response
+    Version: 1 (0x0)
+    Responder Id: 2033CDB761Fxxxxxxxxxxxxxxxxxxxxxxxxxx
+    Produced At: Mar 20 20:00:04 2017 GMT
+    Responses:
+    Certificate ID:
+      Hash Algorithm: sha1
+      Issuer Name Hash: BCA4275C75FEFF061Exxxxxxxxxxxxxxxxxxxxxxx
+      Issuer Key Hash: 2033CDwwwwwwwwwwwwwwwwwwwwwwwwwww
+      Serial Number: yyyyyyyyyyyyyyyyyyyyyyyyyyyyyy
+    Cert Status: good
+    This Update: Mar 20 20:00:04 2017 GMT
+    Next Update: Mar 27 20:00:04 2017 GMT
+
+    Signature Algorithm: sha256WithRSAEncryption
+         3d:44:8e:8d:a6:d9:cd:7f:ae:99:de:de:af:25:f1:90:82:9b:
+         5c:a9:17:05:23:cb:18:28:1e:97:63:2a:02:10:b1:fb:33:af:
+         12:06:43:86:87:b2:64:1a:6a:93:14:c8:4c:ac:96:96:e5:49:
+         82:26:17:f9:7e:79:a3:bf:51:97:a8:e3:1e:1b:b5:9b:88:d7:
+         91:78:4d:a8:ee:dd:6a:b8:94:ed:13:8a:2b:68:a7:7b:2d:43:
+         ab:bc:91:de:d3:42:e3:bb:26:14:de:a4:8f:95:ba:a6:af:f0:
+         0b:bb:91:f3:29:97:da:2e:a5:4f:c5:06:7e:96:5f:3e:09:e6:
+         1a:7c:1f:4e:16:f3:a7:0d:99:cd:e4:9d:99:99:dd:b4:61:ba:
+         14:4e:d3:cc:50:dd:06:85:3f:1e:42:c6:b2:94:af:35:ff:20:
+         db:d6:eb:a9:0f:b3:2f:c7:a9:2c:65:7a:4b:ad:95:2c:cd:6f:
+         05:73:88:f1:7b:a1:b0:ad:75:d3:32:b8:04:a4:41:c4:f4:5c:
+         73:ce:db:e9:06:52:d3:ab:3a:f0:ba:e7:e4:2a:73:b6:62:03:
+         2b:11:8d:df:d5:1e:6b:21:d7:56:a4:37:69:05:f3:78:12:18:
+         e8:22:36:3b:51:58:61:c0:6d:ae:ba:7f:ff:65:49:ba:2d:f0:
+         5f:1b:9f:32
+======================================
+~~~
