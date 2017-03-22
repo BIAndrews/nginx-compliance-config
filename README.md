@@ -108,6 +108,11 @@ cat www.example.com.crt COMODORSADomainValidationSecureServerCA.crt COMODORSAAdd
 
 This is simply the private key file you used to create the CSR request before sending it off to the CA to be signed.
 
+Creation Example:
+~~~
+openssl genrsa -out www.example.com.key 2048
+~~~
+
 ### ssl_dhparam
 
 The Diffie-Hellman algorithm provides the capability for two communicating parties to agree upon a shared secret between them. A unique 2048+ bit DH secret is required and can be easily created with openssl.
