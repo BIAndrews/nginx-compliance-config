@@ -141,7 +141,7 @@ The Diffie-Hellman algorithm provides the capability for two communicating parti
 
 Creation Example:
 ~~~
-openssl dsaparam -out /etc/ssl/dsaparam.pem 4096 # A 4096 bit key will be considered strong for some time.
+sudo openssl dhparam -dsaparam -out /etc/ssl/dhparam.pem 4096 # A 4096 bit key will be considered strong for some time.
 ~~~
 
 ## ssl_trusted_certificate
